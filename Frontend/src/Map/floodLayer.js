@@ -26,8 +26,28 @@ function toGeoJSON(records) {
 }
 
 const SOURCE_ID = "flood-levels";
-const HEATMAP_LAYER_ID = "flood-levels-heatmap";
 const HOVER_LAYER_ID = "flood-levels-hover";
+
+// Rendered in this order (LOW -> HIGH) so a cluster of low-severity points
+// can never visually stack up into a "false" red — HIGH is always painted
+// last/on top, so red only ever means an actual HIGH point is there.
+const BLOB_LEVELS = [
+  { level: "LOW", color: "#2b83ba" },
+  { level: "MEDIUM", color: "#fdae61" },
+  { level: "HIGH", color: "#d7191c" },
+];
+
+function blobLayerId(level) {
+  return `flood-levels-blob-${level.toLowerCase()}`;
+}
+
+function glowLayerId(level) {
+  return `${blobLayerId(level)}-glow`;
+}
+
+function coreLayerId(level) {
+  return `${blobLayerId(level)}-core`;
+}
 
 // Placeholder copy until the backend provides real per-point details.
 const PLACEHOLDER_MESSAGES = [
@@ -55,37 +75,41 @@ export async function addFloodHeatmapLayer(map) {
 
   map.addSource(SOURCE_ID, { type: "geojson", data });
 
-  map.addLayer({
-    id: HEATMAP_LAYER_ID,
-    type: "heatmap",
-    source: SOURCE_ID,
-    paint: {
-      "heatmap-weight": ["interpolate", ["linear"], ["get", "weight"], 0, 0, 10, 1],
-      "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 6, 1, 14, 3],
-      "heatmap-color": [
-        "interpolate",
-        ["linear"],
-        ["heatmap-density"],
-        0,
-        "rgba(0,0,255,0)",
-        0.2,
-        "royalblue",
-        0.4,
-        "cyan",
-        0.6,
-        "lime",
-        0.8,
-        "yellow",
-        1,
-        "red",
-      ],
-      "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 6, 15, 14, 40],
-      "heatmap-opacity": 0.75,
-    },
-  });
+  // Per severity: a soft blurred "glow" halo (shows spread/blob shape) plus
+  // a small solid, white-outlined "core" dot on top (keeps each point easy
+  // to spot at a glance instead of fading into the basemap).
+  for (const { level, color } of BLOB_LEVELS) {
+    map.addLayer({
+      id: glowLayerId(level),
+      type: "circle",
+      source: SOURCE_ID,
+      filter: ["==", ["get", "level"], level],
+      paint: {
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 6, 12, 14, 38],
+        "circle-blur": 1,
+        "circle-color": color,
+        "circle-opacity": 0.45,
+      },
+    });
+
+    map.addLayer({
+      id: coreLayerId(level),
+      type: "circle",
+      source: SOURCE_ID,
+      filter: ["==", ["get", "level"], level],
+      paint: {
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 6, 4, 14, 9],
+        "circle-color": color,
+        "circle-opacity": 0.95,
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#ffffff",
+        "circle-stroke-opacity": 0.9,
+      },
+    });
+  }
 
   // Invisible circles sized per severity, used purely as a hover hit-target
-  // since the heatmap paint itself isn't reliably pickable per point.
+  // since a blurred circle's actual paint area is larger than its geometry.
   map.addLayer({
     id: HOVER_LAYER_ID,
     type: "circle",
@@ -120,10 +144,20 @@ export async function addFloodHeatmapLayer(map) {
     popup.remove();
   });
 
+  // Zoom in towards a point's area when its blob is selected.
+  map.on("click", HOVER_LAYER_ID, (event) => {
+    const feature = event.features[0];
+    map.flyTo({
+      center: feature.geometry.coordinates,
+      zoom: Math.max(map.getZoom(), 13),
+      essential: true,
+    });
+  });
+
   return SOURCE_ID;
 }
 
-/** Call this once new backend data has been fetched to refresh the heatmap. */
+/** Call this once new backend data has been fetched to refresh the flood blobs. */
 export async function refreshFloodData(map) {
   const source = map.getSource(SOURCE_ID);
   if (!source) return;
