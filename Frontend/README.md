@@ -1,38 +1,19 @@
-# Frontend — Netherlands Flood Map
+# Frontend
 
-Vite + vanilla JavaScript app rendering a full-page [MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/) map
-restricted to the Netherlands, with a heatmap overlay for flood levels.
+This folder contains three separate, currently-unmerged front ends. None of them import
+from one another — each is served independently and talks directly to the Backend API
+(`http://127.0.0.1:8000`).
 
-## Structure
+- `map-app/` — Vite + MapLibre GL app rendering the Netherlands flood heatmap.
+  Run with `cd map-app; npm install; npm run dev`. See [map-app/README.md](map-app/README.md).
+- `admin/` — Static admin dashboard (`admin.html` + `admin.js` + `admin.css`) for reviewing
+  reported cities and publishing emergency alerts. No build step; open `admin.html` directly
+  or serve statically, e.g. `python -m http.server` from inside `admin/`.
+- `report/` — Static public reporting page (`report.html` + `report.js` + `report.css`) for
+  residents to report flooding and read published announcements. No build step; serve the same
+  way as `admin/`.
 
-- `src/Map/mapConfig.js` — map style, Netherlands bounds/center, zoom limits, backend endpoint URL.
-- `src/Map/mapInit.js` — creates the MapLibre map, locks panning to the Netherlands, enables scroll-zoom, adds zoom/compass buttons.
-- `src/Map/floodLayer.js` — fetches flood level points from the backend GET endpoint and renders them as a heatmap layer.
-- `src/main.js` — app entry point.
+## Next steps
 
-## Backend contract
-
-`GET` request to the URL configured via `VITE_API_URL` (defaults to `/api/flood-levels`) must return JSON:
-
-```json
-[
-  { "latitude": 52.37, "longitude": 4.90, "level": 7 },
-  { "latitude": 51.92, "longitude": 4.48, "level": 3 }
-]
-```
-
-`level` is used as the heatmap weight (flood severity).
-
-## Getting started
-
-```bash
-cd Frontend
-npm install
-npm run dev
-```
-
-Set a custom backend URL by creating a `.env.local` file:
-
-```
-VITE_API_URL=http://localhost:8000/api/flood-levels
-```
+`report/` has a `map-placeholder` section reserved for embedding the map, but the map
+(`map-app/`) is not yet wired into it — integrating the two is still outstanding.
