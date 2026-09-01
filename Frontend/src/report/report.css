@@ -6,7 +6,6 @@
 }
 
 body {
-    background: #f5f5f5;
     color: #202020;
 }
 
@@ -15,20 +14,26 @@ body {
    TOP NAVIGATION
 ------------------------- */
 
+/* Thin translucent bar riding on top of the map, not a full-page header. */
 .topbar {
-    height: 64px;
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 20;
+
+    height: 60px;
 
     display: flex;
     align-items: center;
 
-    background: #333;
+    background: rgba(30, 30, 30, 0.82);
+    backdrop-filter: blur(6px);
     color: white;
 
-    padding-left: 32px;
+    padding-left: 24px;
 }
 
 .navigation-title {
-    font-size: 24px;
+    font-size: 19px;
     font-weight: bold;
 }
 
@@ -38,15 +43,15 @@ body {
 .report-toggle {
     margin-left: auto;
 
-    height: 64px;
-    min-width: 140px;
+    height: 60px;
+    min-width: 120px;
 
     border: none;
 
     background: #e4e4e4;
     color: #111;
 
-    font-size: 17px;
+    font-size: 15px;
     font-weight: 600;
 
     cursor: pointer;
@@ -61,66 +66,63 @@ body {
    MAIN PAGE
 ------------------------- */
 
+/* Full-viewport passthrough layer: lets clicks/drags reach the map behind it. */
 .main-area {
-    min-height: calc(100vh - 64px);
-
-    display: flex;
-
-    position: relative;
-
-    padding: 20px;
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
 }
 
-
-/* Temporary map area.
-   Your map teammate can replace this later. */
-
-.map-placeholder {
-    flex: 1;
-
-    min-height: calc(100vh - 104px);
-
-    background: white;
-
-    border: 1px solid #ddd;
-
-    padding: 32px;
-}
-
+/* Floating card over the map, not a full-width panel. */
 .announcements {
-    display: block;
+    pointer-events: auto;
+
+    position: fixed;
+    top: 80px;
+    left: 20px;
+    bottom: 20px;
+
+    width: min(400px, calc(100vw - 40px));
+    overflow-y: auto;
+
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(6px);
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+
+    padding: 20px 22px;
 }
 
 .announcements-header {
-    max-width: 660px;
-    padding-bottom: 22px;
+    padding-bottom: 16px;
     border-bottom: 1px solid #e1e1e1;
 }
 
 .section-kicker {
     margin-bottom: 6px;
     color: #666;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.11em;
     text-transform: uppercase;
 }
 
 .announcements-header h1 {
-    margin-bottom: 8px;
-    font-size: 30px;
+    margin-bottom: 6px;
+    font-size: 21px;
 }
 
 .announcements-header > p:last-child,
 .announcement-status {
     color: #666;
-    font-size: 14px;
+    font-size: 13px;
     line-height: 1.5;
 }
 
 .announcement-status {
-    min-height: 21px;
-    margin-top: 18px;
+    min-height: 19px;
+    margin-top: 14px;
 }
 
 .announcement-status.error {
@@ -130,17 +132,17 @@ body {
 .announcement-cities {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 16px;
+    gap: 8px;
+    margin-top: 14px;
 }
 
 .announcement-city-button {
-    padding: 9px 15px;
+    padding: 7px 13px;
     border: 1px solid #bbb;
     border-radius: 999px;
     background: #f2f2f2;
     color: #222;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
 }
@@ -158,14 +160,13 @@ body {
 }
 
 .announcement-messages {
-    max-width: 760px;
     display: grid;
-    gap: 12px;
-    margin-top: 22px;
+    gap: 10px;
+    margin-top: 18px;
 }
 
 .announcement-card {
-    padding: 17px 18px;
+    padding: 14px 15px;
     border: 1px solid #ddd;
     border-left: 4px solid #686868;
     border-radius: 6px;
@@ -173,13 +174,13 @@ body {
 }
 
 .announcement-card h2 {
-    margin-bottom: 7px;
-    font-size: 16px;
+    margin-bottom: 6px;
+    font-size: 14px;
 }
 
 .announcement-card p {
     color: #444;
-    font-size: 15px;
+    font-size: 14px;
     line-height: 1.5;
     overflow-wrap: anywhere;
 }
@@ -190,20 +191,23 @@ body {
 ------------------------- */
 
 .report-panel {
-    width: 380px;
+    pointer-events: auto;
 
-    position: absolute;
+    width: 360px;
 
-    top: 20px;
+    position: fixed;
+
+    top: 80px;
     right: 20px;
 
-    background: #4d4d4d;
+    background: rgba(77, 77, 77, 0.94);
+    backdrop-filter: blur(6px);
 
     color: white;
 
-    padding: 22px;
+    padding: 20px;
 
-    border-radius: 8px;
+    border-radius: 10px;
 
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
 
@@ -213,7 +217,7 @@ body {
 
     overflow-y: auto;
 
-    z-index: 10;
+    z-index: 20;
 }
 
 
@@ -233,11 +237,11 @@ body {
     align-items: center;
     justify-content: space-between;
 
-    margin-bottom: 22px;
+    margin-bottom: 18px;
 }
 
 .panel-header h2 {
-    font-size: 22px;
+    font-size: 18px;
 }
 
 .close-button {
@@ -246,7 +250,7 @@ body {
     background: transparent;
     color: white;
 
-    font-size: 30px;
+    font-size: 26px;
 
     cursor: pointer;
 
@@ -259,7 +263,7 @@ body {
 ------------------------- */
 
 .form-group {
-    margin-bottom: 22px;
+    margin-bottom: 18px;
 
     position: relative;
 }
@@ -268,9 +272,10 @@ body {
 .form-group > p {
     display: block;
 
-    margin-bottom: 9px;
+    margin-bottom: 8px;
 
     font-weight: 600;
+    font-size: 14px;
 }
 
 .required-marker {
@@ -285,14 +290,14 @@ body {
 .form-group input[type="tel"] {
     width: 100%;
 
-    padding: 11px 12px;
+    padding: 10px 11px;
 
     border: 1px solid #bcbcbc;
     border-radius: 5px;
 
     background: white;
 
-    font-size: 15px;
+    font-size: 14px;
 
     outline: none;
 }
@@ -313,16 +318,18 @@ body {
     display: flex;
     align-items: center;
 
-    gap: 9px;
+    gap: 8px;
 
-    margin-bottom: 9px;
+    margin-bottom: 8px;
+
+    font-size: 14px;
 
     cursor: pointer;
 }
 
 .radio-option input {
-    width: 18px;
-    height: 18px;
+    width: 17px;
+    height: 17px;
 
     cursor: pointer;
 }
@@ -340,7 +347,7 @@ body {
     left: 0;
     right: 0;
 
-    top: 67px;
+    top: 63px;
 
     background: white;
 
@@ -361,13 +368,13 @@ body {
 }
 
 .address-suggestion {
-    padding: 11px 12px;
+    padding: 10px 11px;
 
     border-bottom: 1px solid #eeeeee;
 
     cursor: pointer;
 
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .address-suggestion:last-child {
@@ -402,7 +409,7 @@ body {
 .submit-button {
     width: 100%;
 
-    padding: 12px;
+    padding: 11px;
 
     border: none;
     border-radius: 5px;
@@ -410,7 +417,7 @@ body {
     background: white;
     color: #222;
 
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
 
     cursor: pointer;
@@ -427,13 +434,11 @@ body {
 
 @media (max-width: 700px) {
 
-    .main-area {
-        padding: 0;
-    }
-
-    .map-placeholder {
-        min-height: calc(100vh - 64px);
-        padding: 24px 18px;
+    .announcements {
+        top: 72px;
+        left: 10px;
+        bottom: 10px;
+        width: calc(100vw - 20px);
     }
 
     .report-panel {

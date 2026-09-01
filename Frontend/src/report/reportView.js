@@ -1,16 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Flood Reporting</title>
-
-    <link rel="stylesheet" href="report.css">
-</head>
-
-<body>
-
+// Builds the report overlay DOM (topbar + announcements card + report form) on top of the map.
+// Kept as a template (not static HTML) so the page markup lives alongside its JS, like main.js/mapInit.js do for the map.
+export function renderReportView(root) {
+  root.insertAdjacentHTML(
+    "beforeend",
+    `
     <header class="topbar">
 
         <div class="navigation-title">
@@ -26,7 +19,7 @@
 
     <main class="main-area">
 
-        <section class="map-placeholder announcements" aria-labelledby="announcementsTitle">
+        <section class="announcements" aria-labelledby="announcementsTitle">
             <div class="announcements-header">
                 <p class="section-kicker">Public information</p>
                 <h1 id="announcementsTitle">Announcements</h1>
@@ -215,9 +208,6 @@
         </aside>
 
     </main>
-
-
-    <script src="report.js"></script>
-
-</body>
-</html>
+    `
+  );
+}

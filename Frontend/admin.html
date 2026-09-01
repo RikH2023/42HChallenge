@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Flood Alert Administration</title>
+
+    <link rel="stylesheet" href="./src/style.css">
+    <link rel="stylesheet" href="./src/admin/admin.css">
+</head>
+
+<body>
+
+    <div id="map"></div>
+
+    <script type="module">
+        import { bootMap } from "./src/mapBoot.js";
+        import "./src/admin/admin.js";
+
+        bootMap("map");
+    </script>
+
+</body>
+</html>
+

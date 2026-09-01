@@ -1,16 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Flood Alert Administration</title>
-
-    <link rel="stylesheet" href="admin.css">
-</head>
-
-<body>
-
+// Builds the admin overlay DOM (topbar + floating sidebar) on top of the map.
+// Kept as a template (not static HTML) so the page markup lives alongside its JS, like main.js/mapInit.js do for the map.
+export function renderAdminView(root) {
+  root.insertAdjacentHTML(
+    "beforeend",
+    `
     <header class="topbar">
         <div>
             <p class="eyebrow">Flood reporting</p>
@@ -93,8 +86,6 @@
         </section>
 
     </main>
-
-    <script src="admin.js"></script>
-
-</body>
-</html>
+    `
+  );
+}

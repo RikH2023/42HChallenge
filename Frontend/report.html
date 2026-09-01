@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Flood Reporting</title>
+
+    <link rel="stylesheet" href="./src/style.css">
+    <link rel="stylesheet" href="./src/report/report.css">
+</head>
+
+<body>
+
+    <div id="map"></div>
+
+    <script type="module">
+        import { bootMap } from "./src/mapBoot.js";
+        import "./src/report/report.js";
+
+        bootMap("map");
+    </script>
+
+</body>
+</html>

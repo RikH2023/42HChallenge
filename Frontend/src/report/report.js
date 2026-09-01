@@ -1,3 +1,7 @@
+import { renderReportView } from "./reportView.js";
+
+renderReportView(document.body);
+
 const reportToggle = document.getElementById("reportToggle");
 const reportPanel = document.getElementById("reportPanel");
 const closeReport = document.getElementById("closeReport");
