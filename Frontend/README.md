@@ -9,7 +9,8 @@ all three pages below; the admin/report UIs are floating card components on top 
 - `index.html` — map only.
 - `admin.html` — map background + floating admin sidebar (`src/admin/`) for reviewing reported cities and
   publishing emergency alerts.
-- `report.html` — map background + floating announcements card and report-flooding form (`src/report/`).
+- `public/index.html` (served at `/public`) — map background + floating announcements card and
+  report-flooding form (`src/report/`) for residents.
 
 ## Structure
 
@@ -20,8 +21,11 @@ all three pages below; the admin/report UIs are floating card components on top 
 - `src/main.js` — entry point for `index.html`.
 - `src/admin/adminView.js`, `src/report/reportView.js` — build their page's overlay markup via `insertAdjacentHTML`
   (same JS-driven style as `src/Map`, not static HTML), called once at the top of `admin.js`/`report.js`.
-- `src/admin/`, `src/report/` — JS/CSS for the admin and report overlay UIs. `admin.html`/`report.html` are just a
-  `#map` div + a `<script type="module">` — all markup is generated at runtime, mirroring how `main.js` drives the map.
+- `src/admin/`, `src/report/` — JS/CSS for the admin and report overlay UIs. `admin.html`/`public/index.html` are
+  just a `#map` div + a `<script type="module">` — all markup is generated at runtime, mirroring how `main.js`
+  drives the map.
+- `public/` — route folder for the resident-facing report page (`/public`), NOT Vite's static-assets convention;
+  `publicDir` is disabled in `vite.config.js` since this folder name is repurposed for the route.
 
 ## Backend contract
 
@@ -44,7 +48,7 @@ npm install
 npm run dev
 ```
 
-Then open `/`, `/admin.html`, or `/report.html`. Set a custom backend URL by creating a `.env.local` file:
+Then open `/`, `/admin.html`, or `/public`. Set a custom backend URL by creating a `.env.local` file:
 
 ```
 VITE_API_URL=http://localhost:8000/api/flood-levels

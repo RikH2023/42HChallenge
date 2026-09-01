@@ -9,6 +9,11 @@ body {
     color: #202020;
 }
 
+.report-page #map {
+    top: 60px;
+    height: calc(100vh - 60px);
+}
+
 
 /* -------------------------
    TOP NAVIGATION
