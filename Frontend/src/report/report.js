@@ -1,6 +1,17 @@
 import { renderReportView } from "./reportView.js";
+import { refreshFloodData } from "../Map/floodLayer.js";
 
 renderReportView(document.body);
+
+let mapInstance = null;
+
+/**
+ * Initialize the report page with a map instance.
+ * Call this after creating the map to enable form submission features.
+ */
+export function setupReportPage(map) {
+    mapInstance = map;
+}
 
 const reportToggle = document.getElementById("reportToggle");
 const reportPanel = document.getElementById("reportPanel");
@@ -11,7 +22,6 @@ const reportForm = document.getElementById("reportForm");
 const addressInput = document.getElementById("address");
 const suggestionsBox = document.getElementById("addressSuggestions");
 const announcementCities = document.getElementById("announcementCities");
-const announcementMessages = document.getElementById("announcementMessages");
 const announcementStatus = document.getElementById("announcementStatus");
 
 const TEST_MODE = false;
@@ -86,7 +96,6 @@ async function loadAnnouncements() {
 
         if (publishedAnnouncements.length === 0) {
             selectedAnnouncementCity = "";
-            announcementMessages.replaceChildren();
             setAnnouncementStatus("There are currently no published announcements.");
         } else if (selectedAnnouncementCity && publishedAnnouncements.some(function (message) {
             return normaliseAnnouncementCity(message.city) === normaliseAnnouncementCity(selectedAnnouncementCity);
@@ -94,13 +103,11 @@ async function loadAnnouncements() {
             selectAnnouncementCity(selectedAnnouncementCity);
         } else {
             selectedAnnouncementCity = "";
-            announcementMessages.replaceChildren();
             setAnnouncementStatus("Select a city to read its announcements.");
         }
     } catch (error) {
         console.error("Could not load announcements:", error);
         announcementCities.replaceChildren();
-        announcementMessages.replaceChildren();
         setAnnouncementStatus("Announcements could not be loaded. Please try again later.", true);
     } finally {
         isLoadingAnnouncements = false;
@@ -128,17 +135,50 @@ function renderAnnouncementCities(messages) {
     });
 
     uniqueCities.forEach(function (city) {
-        const cityButton = document.createElement("button");
-        cityButton.type = "button";
-        cityButton.className = "announcement-city-button";
-        cityButton.textContent = city;
-        cityButton.dataset.city = city;
-        cityButton.setAttribute("aria-pressed", "false");
-        cityButton.addEventListener("click", function () {
-            selectAnnouncementCity(city);
+        const cityCard = document.createElement("div");
+        cityCard.className = "city-card collapsed";
+        cityCard.dataset.city = city;
+
+        const collapsibleHeader = document.createElement("button");
+        collapsibleHeader.type = "button";
+        collapsibleHeader.className = "city-collapsible-header";
+        collapsibleHeader.setAttribute("aria-expanded", "false");
+        collapsibleHeader.setAttribute("data-section", city);
+
+        const headerContent = document.createElement("div");
+        const headerText = document.createElement("span");
+        headerText.className = "city-name";
+        headerText.textContent = city;
+
+        const icon = document.createElement("svg");
+        icon.className = "collapsible-icon";
+        icon.setAttribute("width", "20");
+        icon.setAttribute("height", "20");
+        icon.setAttribute("viewBox", "0 0 24 24");
+        icon.setAttribute("fill", "none");
+        icon.setAttribute("stroke", "currentColor");
+        icon.setAttribute("stroke-width", "2");
+        const polyline = document.createElement("polyline");
+        polyline.setAttribute("points", "6 9 12 15 18 9");
+        icon.appendChild(polyline);
+
+        headerContent.appendChild(headerText);
+        collapsibleHeader.appendChild(headerContent);
+        collapsibleHeader.appendChild(icon);
+
+        const messagesContainer = document.createElement("div");
+        messagesContainer.className = "city-messages-container";
+        messagesContainer.setAttribute("data-city", city);
+
+        cityCard.appendChild(collapsibleHeader);
+        cityCard.appendChild(messagesContainer);
+
+        collapsibleHeader.addEventListener("click", function (e) {
+            e.preventDefault();
+            toggleCityCollapsible(city);
         });
 
-        announcementCities.appendChild(cityButton);
+        announcementCities.appendChild(cityCard);
     });
 }
 
@@ -146,42 +186,59 @@ function renderAnnouncementCities(messages) {
 function selectAnnouncementCity(city) {
     selectedAnnouncementCity = city;
 
-    announcementCities.querySelectorAll(".announcement-city-button").forEach(function (button) {
-        const isSelected = normaliseAnnouncementCity(button.dataset.city) ===
-            normaliseAnnouncementCity(city);
-        button.classList.toggle("selected", isSelected);
-        button.setAttribute("aria-pressed", String(isSelected));
-    });
-
     const cityMessages = publishedAnnouncements.filter(function (message) {
         return normaliseAnnouncementCity(message.city) === normaliseAnnouncementCity(city);
     });
 
     renderAnnouncementMessages(city, cityMessages);
-    
-    // Better status message
-    const count = cityMessages.length;
-    const countText = count === 1 ? "announcement" : "announcements";
-    setAnnouncementStatus(`${count} active ${countText} for ${city}`);
 
     console.log(`Announcements for ${city}:`, cityMessages);
 }
 
 
+function toggleCityCollapsible(city) {
+    const cityCard = announcementCities.querySelector(`[data-city="${city}"]`);
+    if (!cityCard) return;
+
+    const header = cityCard.querySelector(".city-collapsible-header");
+    const isExpanded = header.getAttribute("aria-expanded") === "true";
+
+    header.setAttribute("aria-expanded", String(!isExpanded));
+    cityCard.classList.toggle("collapsed", isExpanded);
+
+    // Load messages when opening (if it was closed, now it's opening)
+    if (!isExpanded) {
+        selectAnnouncementCity(city);
+    }
+}
+
+
 function renderAnnouncementMessages(city, messages) {
-    announcementMessages.replaceChildren();
+    const messagesContainer = announcementCities.querySelector(
+        `.city-messages-container[data-city="${city}"]`
+    );
+    
+    if (!messagesContainer) return;
+
+    messagesContainer.replaceChildren();
 
     messages.forEach(function (message) {
         const card = document.createElement("article");
-        const heading = document.createElement("h2");
-        const text = document.createElement("p");
-
         card.className = "announcement-card";
+        
+        const heading = document.createElement("h3");
         heading.textContent = city;
+        
+        const text = document.createElement("p");
         text.textContent = message.msg;
-        card.append(heading, text);
-        announcementMessages.appendChild(card);
+        
+        card.appendChild(heading);
+        card.appendChild(text);
+        messagesContainer.appendChild(card);
     });
+    
+    // Trigger animation
+    messagesContainer.classList.add("expanded");
 }
 
 
@@ -568,7 +625,22 @@ reportForm.addEventListener("submit", async function (event) {
 
 
         if (response.ok) {
-            alert("Report submitted successfully");
+            // Refresh the map with latest flood data
+            if (mapInstance) {
+                await refreshFloodData(mapInstance);
+            }
+            
+            // Clear the form
+            reportForm.reset();
+            selectedAddress = "";
+            addressInput.value = "";
+            suggestionsBox.replaceChildren();
+            
+            // Close the report panel
+            reportPanel.classList.remove("open");
+            
+            // Show success message
+            showSuccessMessage("Report submitted successfully!");
             return;
         }
 
@@ -609,4 +681,34 @@ function escapeHTML(value) {
 
     return div.innerHTML;
 
+}
+
+
+/*
+--------------------------------------------------
+SUCCESS NOTIFICATION
+--------------------------------------------------
+*/
+
+function showSuccessMessage(message) {
+    const notification = document.createElement("div");
+    notification.className = "success-notification";
+    notification.textContent = message;
+    notification.setAttribute("role", "status");
+    notification.setAttribute("aria-live", "polite");
+    
+    document.body.appendChild(notification);
+    
+    // Trigger animation
+    setTimeout(function () {
+        notification.classList.add("show");
+    }, 10);
+    
+    // Remove after 3 seconds
+    setTimeout(function () {
+        notification.classList.remove("show");
+        setTimeout(function () {
+            notification.remove();
+        }, 300);
+    }, 3000);
 }
