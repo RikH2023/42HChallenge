@@ -1,13 +1,12 @@
 import maplibregl from "maplibre-gl";
 import { FLOOD_DATA_URL, LEVEL_WEIGHTS } from "./mapConfig.js";
-import { TEST_FLOOD_DATA } from "./testFloodData.js";
 
 /**
  * Backend contract (GET FLOOD_DATA_URL):
- * [[longitude, latitude, level], ...] where level is "LOW" | "MEDIUM" | "HIGH".
+ * [{ lng, lat, severity, city }, ...] where severity is "low" | "mid" | "high".
  */
 export async function fetchFloodData() {
-  const response = await fetch(FLOOD_DATA_URL);
+  const response = await fetch(FLOOD_DATA_URL, { cache: "no-store" });
   if (!response.ok) {
     throw new Error(`Failed to fetch flood data: ${response.status}`);
   }
@@ -17,11 +16,14 @@ export async function fetchFloodData() {
 function toGeoJSON(records) {
   return {
     type: "FeatureCollection",
-    features: records.map(([longitude, latitude, level]) => ({
+    features: records.map(({ lng, lat, severity, city }) => {
+      const level = { low: "LOW", mid: "MEDIUM", high: "HIGH" }[severity];
+      return {
       type: "Feature",
-      geometry: { type: "Point", coordinates: [longitude, latitude] },
-      properties: { level, weight: LEVEL_WEIGHTS[level] ?? 1 },
-    })),
+      geometry: { type: "Point", coordinates: [lng, lat] },
+      properties: { city, level, weight: LEVEL_WEIGHTS[level] ?? 1 },
+      };
+    }),
   };
 }
 
@@ -49,19 +51,8 @@ function coreLayerId(level) {
   return `${blobLayerId(level)}-core`;
 }
 
-// Placeholder copy until the backend provides real per-point details.
-const PLACEHOLDER_MESSAGES = [
-  "Water level rising rapidly in this area.",
-  "Sensors report unusual moisture levels.",
-  "Local drainage system nearing capacity.",
-  "Historical flood risk zone.",
-  "Recent rainfall exceeding seasonal average.",
-];
-
 function buildPopupHTML(level) {
-  const message =
-    PLACEHOLDER_MESSAGES[Math.floor(Math.random() * PLACEHOLDER_MESSAGES.length)];
-  return `<strong>Flood level: ${level}</strong><br/>${message}`;
+  return `<strong>${level}</strong>`;
 }
 
 export async function addFloodHeatmapLayer(map) {
@@ -69,8 +60,8 @@ export async function addFloodHeatmapLayer(map) {
   try {
     data = toGeoJSON(await fetchFloodData());
   } catch (error) {
-    console.warn("Backend flood data unavailable, using local test data instead.", error);
-    data = toGeoJSON(TEST_FLOOD_DATA);
+    console.error("Could not load flood data from the backend.", error);
+    data = toGeoJSON([]);
   }
 
   map.addSource(SOURCE_ID, { type: "geojson", data });

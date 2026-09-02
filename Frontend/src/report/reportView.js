@@ -7,7 +7,7 @@ export function renderReportView(root) {
     <header class="topbar">
 
         <div class="navigation-title">
-            Navigation panel
+            FloodWatch
         </div>
 
         <button id="reportToggle" class="report-toggle">
@@ -19,17 +19,14 @@ export function renderReportView(root) {
 
     <main class="main-area">
 
-        <section class="announcements" aria-labelledby="announcementsTitle">
-            <div class="announcements-header">
-                <p class="section-kicker">Public information</p>
-                <h1 id="announcementsTitle">Announcements</h1>
-                <p>Select a city to view its published emergency messages.</p>
+        <aside class="cities-sidebar" aria-label="Cities with announcements">
+            <div class="cities-sidebar-header">
+                <p class="section-kicker">Active alerts</p>
+                <h2>Cities</h2>
             </div>
-
+            <div id="announcementCities" class="cities-list" aria-label="Cities with announcements"></div>
             <div id="announcementStatus" class="announcement-status" role="status"></div>
-            <div id="announcementCities" class="announcement-cities" aria-label="Cities with announcements"></div>
-            <div id="announcementMessages" class="announcement-messages"></div>
-        </section>
+        </aside>
 
 
         <aside id="reportPanel" class="report-panel">

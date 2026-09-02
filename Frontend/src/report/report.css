@@ -19,6 +19,24 @@ body {
    TOP NAVIGATION
 ------------------------- */
 
+@keyframes waveFlow {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes reportPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(74, 144, 226, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(74, 144, 226, 0);
+    }
+}
+
 /* Thin translucent bar riding on top of the map, not a full-page header. */
 .topbar {
     position: fixed;
@@ -30,16 +48,43 @@ body {
     display: flex;
     align-items: center;
 
-    background: rgba(30, 30, 30, 0.82);
-    backdrop-filter: blur(6px);
+    background: linear-gradient(135deg, rgba(20, 80, 130, 0.9) 0%, rgba(30, 30, 30, 0.85) 100%);
+    backdrop-filter: blur(8px);
     color: white;
 
     padding-left: 24px;
+    
+    overflow: hidden;
+    border-bottom: 2px solid rgba(74, 144, 226, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Animated wave background */
+.topbar::before {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 200%;
+    height: 4px;
+    
+    background: linear-gradient(90deg, 
+        transparent 0%,
+        rgba(74, 144, 226, 0.3) 25%,
+        transparent 50%,
+        rgba(74, 144, 226, 0.3) 75%,
+        transparent 100%);
+    background-size: 100% 100%;
+    
+    animation: waveFlow 6s linear infinite;
 }
 
 .navigation-title {
     font-size: 19px;
     font-weight: bold;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 
@@ -47,23 +92,53 @@ body {
 
 .report-toggle {
     margin-left: auto;
+    margin-right: 20px;
 
-    height: 60px;
-    min-width: 120px;
+    height: 44px;
+    min-width: 130px;
+    padding: 0 20px;
 
     border: none;
+    border-radius: 8px;
 
-    background: #e4e4e4;
-    color: #111;
+    background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+    color: white;
 
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 700;
+    letter-spacing: 0.5px;
 
     cursor: pointer;
+    
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: reportPulse 2s infinite;
+    
+    box-shadow: 0 4px 16px rgba(74, 144, 226, 0.4);
+}
+
+.report-toggle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+    border-radius: 8px;
+    pointer-events: none;
 }
 
 .report-toggle:hover {
-    background: #d4d4d4;
+    background: linear-gradient(135deg, #5ba3f5 0%, #4a8fd6 100%);
+    box-shadow: 0 6px 24px rgba(74, 144, 226, 0.6);
+    transform: translateY(-2px);
+}
+
+.report-toggle:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(74, 144, 226, 0.4);
 }
 
 
@@ -78,116 +153,284 @@ body {
     pointer-events: none;
 }
 
-/* Floating card over the map, not a full-width panel. */
-.announcements {
-    pointer-events: auto;
+/* -------------------------
+   CITIES SIDEBAR
+------------------------- */
 
+@keyframes rollDown {
+    from {
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+    }
+    to {
+        max-height: 1000px;
+        opacity: 1;
+        overflow: visible;
+    }
+}
+
+.cities-sidebar {
+    pointer-events: auto;
     position: fixed;
     top: 80px;
     left: 20px;
     bottom: 20px;
+    width: 280px;
+    
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 
-    width: min(400px, calc(100vw - 40px));
-    overflow-y: auto;
-
-    background: rgba(255, 255, 255, 0.94);
-    backdrop-filter: blur(6px);
-    border: 1px solid #ddd;
+    padding: 16px;
+    background: rgba(18, 24, 31, 0.78);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 10px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
 
-    padding: 20px 22px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 10px;
 }
 
-.announcements-header {
-    padding-bottom: 16px;
-    border-bottom: 1px solid #e1e1e1;
+.cities-sidebar::-webkit-scrollbar {
+    width: 6px;
 }
 
-.section-kicker {
-    margin-bottom: 6px;
-    color: #666;
+.cities-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.cities-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(74, 144, 226, 0.5);
+    border-radius: 3px;
+}
+
+.cities-sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(74, 144, 226, 0.8);
+}
+
+.cities-sidebar-header {
+    padding-bottom: 12px;
+    border-bottom: 2px solid rgba(74, 144, 226, 0.2);
+    margin-bottom: 4px;
+}
+
+.cities-sidebar-header .section-kicker {
+    margin-bottom: 4px;
+    color: #4a90e2;
     font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.11em;
+    font-weight: 800;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
 }
 
-.announcements-header h1 {
-    margin-bottom: 6px;
-    font-size: 21px;
+.cities-sidebar-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
 }
 
-.announcements-header > p:last-child,
-.announcement-status {
-    color: #666;
-    font-size: 13px;
-    line-height: 1.5;
-}
-
-.announcement-status {
-    min-height: 19px;
-    margin-top: 14px;
-}
-
-.announcement-status.error {
-    color: #a32727;
-}
-
-.announcement-cities {
+.cities-list {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 8px;
-    margin-top: 14px;
 }
 
-.announcement-city-button {
-    padding: 7px 13px;
-    border: 1px solid #bbb;
-    border-radius: 999px;
-    background: #f2f2f2;
-    color: #222;
-    font-size: 13px;
+/* Individual city bookmark */
+.city-bookmark {
+    display: flex;
+    flex-direction: column;
+}
+
+.city-bookmark-button {
+    padding: 12px 16px;
+    border: 2px solid rgba(74, 144, 226, 0.2);
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 248, 248, 0.8) 100%);
+    color: #333;
+    font-size: 14px;
     font-weight: 600;
+    text-align: left;
     cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-.announcement-city-button:hover,
-.announcement-city-button:focus-visible {
-    border-color: #555;
-    outline: none;
+.city-bookmark-button::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background: linear-gradient(180deg, #4a90e2 0%, #2e5c8a 100%);
+    transform: scaleY(0);
+    transform-origin: center;
+    transition: transform 0.3s ease;
 }
 
-.announcement-city-button.selected {
-    border-color: #333;
-    background: #333;
+.city-bookmark-button:hover {
+    border-color: #4a90e2;
+    background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
+    transform: translateX(4px);
+}
+
+.city-bookmark-button.selected {
+    border-color: #4a90e2;
+    background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
     color: white;
+    box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
 }
 
-.announcement-messages {
-    display: grid;
+.city-bookmark-button.selected::before {
+    transform: scaleY(1);
+}
+
+.city-bookmark-button:focus-visible {
+    outline: 2px solid #4a90e2;
+    outline-offset: 2px;
+}
+
+/* City card with collapsible header */
+.city-card {
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(74, 144, 226, 0.2);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.city-card:hover {
+    border-color: #4a90e2;
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
+}
+
+.city-collapsible-header {
+    padding: 12px 14px;
+    border: none;
+    background: transparent;
+    color: #333;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 10px;
-    margin-top: 18px;
+    transition: all 0.3s ease;
+}
+
+.city-collapsible-header:hover {
+    background: rgba(74, 144, 226, 0.05);
+}
+
+.city-collapsible-header:focus-visible {
+    outline: 2px solid #4a90e2;
+    outline-offset: -2px;
+}
+
+.city-name {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: #333;
+}
+
+.collapsible-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    color: #4a90e2;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.city-card.collapsed .collapsible-icon {
+    transform: rotate(-90deg);
+}
+
+/* Messages container that rolls down */
+.city-messages-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 800px;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                opacity 0.4s ease,
+                padding 0.4s ease,
+                visibility 0.4s ease;
+    opacity: 1;
+    padding: 0 14px 14px 14px;
+    visibility: visible;
+}
+
+.city-card.collapsed .city-messages-container {
+    max-height: 0;
+    opacity: 0;
+    padding: 0 14px;
+    visibility: hidden;
 }
 
 .announcement-card {
-    padding: 14px 15px;
-    border: 1px solid #ddd;
-    border-left: 4px solid #686868;
+    padding: 12px 14px;
+    border: none;
+    border-left: 4px solid #4a90e2;
     border-radius: 6px;
-    background: #fafafa;
+    background: linear-gradient(135deg, rgba(74, 144, 226, 0.08) 0%, rgba(74, 144, 226, 0.04) 100%);
+    box-shadow: 0 2px 8px rgba(74, 144, 226, 0.1);
+    transition: all 0.3s ease;
+    font-size: 13px;
 }
 
-.announcement-card h2 {
-    margin-bottom: 6px;
-    font-size: 14px;
+.announcement-card:hover {
+    background: linear-gradient(135deg, rgba(74, 144, 226, 0.12) 0%, rgba(74, 144, 226, 0.08) 100%);
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
+    transform: translateX(4px);
+}
+
+.announcement-card h3 {
+    margin: 0 0 6px 0;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #4a90e2;
 }
 
 .announcement-card p {
-    color: #444;
-    font-size: 14px;
+    margin: 0;
+    color: #333;
+    font-size: 12px;
     line-height: 1.5;
     overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.announcement-status {
+    padding: 10px 12px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.78);
+    background: rgba(74, 144, 226, 0.06);
+    border-left: 3px solid #4a90e2;
+    border-radius: 4px;
+    margin-top: auto;
+}
+
+.announcement-status.error {
+    color: #d32f2f;
+    background: rgba(211, 47, 47, 0.08);
+    border-left-color: #d32f2f;
 }
 
 
@@ -198,23 +441,24 @@ body {
 .report-panel {
     pointer-events: auto;
 
-    width: 360px;
+    width: 380px;
 
     position: fixed;
 
     top: 80px;
     right: 20px;
 
-    background: rgba(77, 77, 77, 0.94);
-    backdrop-filter: blur(6px);
+    background: linear-gradient(135deg, rgba(77, 77, 77, 0.95) 0%, rgba(60, 60, 60, 0.95) 100%);
+    backdrop-filter: blur(10px);
 
     color: white;
 
-    padding: 20px;
+    padding: 24px;
 
-    border-radius: 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
 
     display: none;
 
@@ -223,6 +467,23 @@ body {
     overflow-y: auto;
 
     z-index: 20;
+}
+
+.report-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.report-panel::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.report-panel::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.report-panel::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
 }
 
 
@@ -264,56 +525,56 @@ body {
 
 
 /* -------------------------
-   FORM
+   FORM STYLING
 ------------------------- */
 
 .form-group {
-    margin-bottom: 18px;
-
+    margin-bottom: 20px;
     position: relative;
 }
 
 .form-group > label:not(.radio-option),
 .form-group > p {
     display: block;
-
-    margin-bottom: 8px;
-
+    margin-bottom: 10px;
     font-weight: 600;
     font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #e0e0e0;
 }
 
 .required-marker {
-    color: #ff5c5c;
+    color: #ff6b6b;
     font-weight: 700;
 }
-
 
 /* Text fields */
 
 .form-group input[type="text"],
 .form-group input[type="tel"] {
     width: 100%;
-
-    padding: 10px 11px;
-
-    border: 1px solid #bcbcbc;
-    border-radius: 5px;
-
-    background: white;
-
+    padding: 12px 14px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
     font-size: 14px;
-
     outline: none;
+    transition: all 0.3s ease;
+}
+
+.form-group input[type="text"]::placeholder,
+.form-group input[type="tel"]::placeholder {
+    color: rgba(255, 255, 255, 0.6);
 }
 
 .form-group input[type="text"]:focus,
 .form-group input[type="tel"]:focus {
-    border-color: #222;
-
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
+    border-color: #4a90e2;
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
 }
-
 
 /* -------------------------
    RADIO BUTTONS
@@ -322,21 +583,22 @@ body {
 .radio-option {
     display: flex;
     align-items: center;
-
-    gap: 8px;
-
-    margin-bottom: 8px;
-
+    gap: 12px;
+    margin-bottom: 12px;
     font-size: 14px;
-
     cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.radio-option:hover {
+    color: #4a90e2;
 }
 
 .radio-option input {
-    width: 17px;
-    height: 17px;
-
+    width: 18px;
+    height: 18px;
     cursor: pointer;
+    accent-color: #4a90e2;
 }
 
 
@@ -413,23 +675,34 @@ body {
 
 .submit-button {
     width: 100%;
-
-    padding: 11px;
-
+    padding: 13px;
     border: none;
-    border-radius: 5px;
-
-    background: white;
-    color: #222;
-
+    border-radius: 8px;
+    background: linear-gradient(135deg, #4a90e2 0%, #2e5c8a 100%);
+    color: white;
     font-size: 15px;
     font-weight: 600;
-
     cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .submit-button:hover {
-    background: #e9e9e9;
+    background: linear-gradient(135deg, #5a9ff2 0%, #3a6a9a 100%);
+    box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
+    transform: translateY(-2px);
+}
+
+.submit-button:active {
+    transform: translateY(0);
+}
+
+.submit-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
 }
 
 
@@ -456,4 +729,34 @@ body {
         max-height: calc(100vh - 90px);
     }
 
+}
+
+
+/* -------------------------
+   SUCCESS NOTIFICATION
+------------------------- */
+
+.success-notification {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    z-index: 1000;
+    
+    padding: 16px 24px;
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+    font-size: 15px;
+    font-weight: 500;
+    
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.success-notification.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
 }

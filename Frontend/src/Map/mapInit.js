@@ -29,7 +29,7 @@ export function initMap(containerId) {
   map.scrollZoom.enable();
 
   // Adds the +/- zoom buttons and compass/reset-north control.
-  map.addControl(new maplibregl.NavigationControl({ showCompass: true }), "top-right");
+  map.addControl(new maplibregl.NavigationControl({ showCompass: true }), "bottom-right");
   map.addControl(new maplibregl.ScaleControl(), "bottom-left");
 
   // Keep the canvas correctly sized on any screen/window size.

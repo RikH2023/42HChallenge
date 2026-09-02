@@ -16,9 +16,10 @@
 
     <script type="module">
         import { bootMap } from "../src/mapBoot.js";
-        import "../src/report/report.js";
+        import { setupReportPage } from "../src/report/report.js";
 
-        bootMap("map");
+        const map = bootMap("map");
+        setupReportPage(map);
     </script>
 
 </body>

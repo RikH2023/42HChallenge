@@ -5,6 +5,7 @@ renderAdminView(document.body);
 const TEST_MODE = false;
 
 const API_BASE_URL = "http://127.0.0.1:8000";
+const REFRESH_INTERVAL_MS = 30_000;
 
 const citiesList = document.getElementById("citiesList");
 const citiesStatus = document.getElementById("citiesStatus");
@@ -19,6 +20,8 @@ const sendButton = document.getElementById("sendButton");
 const formStatus = document.getElementById("formStatus");
 
 let selectedCity = "";
+let isLoadingDashboard = false;
+let lastLoadedMessages = [];
 
 let mockCities = [
     { city: "Eindhoven", report_count: 2, highest_severity: "high" },
@@ -45,8 +48,29 @@ let mockMessages = [
 
 
 document.addEventListener("DOMContentLoaded", function () {
-    loadDashboard();
+    startDashboardRefresh();
 });
+
+
+function startDashboardRefresh() {
+    loadDashboard();
+
+    const refreshTimer = window.setInterval(function () {
+        if (document.visibilityState === "visible") {
+            loadDashboard();
+        }
+    }, REFRESH_INTERVAL_MS);
+
+    document.addEventListener("visibilitychange", function () {
+        if (document.visibilityState === "visible") {
+            loadDashboard();
+        }
+    });
+
+    window.addEventListener("pagehide", function () {
+        window.clearInterval(refreshTimer);
+    }, { once: true });
+}
 
 
 refreshButton.addEventListener("click", function () {
@@ -128,11 +152,17 @@ alertForm.addEventListener("submit", async function (event) {
 
 
 async function loadDashboard() {
+    if (isLoadingDashboard) {
+        return;
+    }
+
+    isLoadingDashboard = true;
     refreshButton.disabled = true;
 
     try {
         await Promise.all([loadCities(), loadMessages()]);
     } finally {
+        isLoadingDashboard = false;
         refreshButton.disabled = false;
     }
 }
@@ -171,12 +201,31 @@ async function loadMessages() {
             : await getJson(`${API_BASE_URL}/admin/messages`);
 
         console.log("Admin messages:", messages);
-        renderMessages(messages);
-
-        if (messages.length === 0) {
-            setStatus(messagesStatus, "There are no active messages.");
+        
+        // Save the full list
+        lastLoadedMessages = messages;
+        
+        // If a city is selected, show only messages for that city
+        if (selectedCity) {
+            const cityMessages = messages.filter(function (message) {
+                return message.city === selectedCity;
+            });
+            renderMessages(cityMessages);
+            
+            if (cityMessages.length === 0) {
+                setStatus(messagesStatus, `No active alerts for ${selectedCity} yet.`);
+            } else {
+                clearStatus(messagesStatus);
+            }
         } else {
-            clearStatus(messagesStatus);
+            // Show all messages if no city selected
+            renderMessages(messages);
+            
+            if (messages.length === 0) {
+                setStatus(messagesStatus, "There are no active messages.");
+            } else {
+                clearStatus(messagesStatus);
+            }
         }
     } catch (error) {
         console.error("Could not load admin messages:", error);
@@ -215,7 +264,7 @@ function renderCities(cities) {
 
         const severityName = formatSeverity(summary.highest_severity);
         severity.className = `severity-badge severity-${summary.highest_severity}`;
-        severity.textContent = `Highest: ${severityName}`;
+        severity.textContent = `Severity: ${severityName}`;
 
         cityButton.append(cityDetails, severity);
         cityButton.addEventListener("click", function () {
@@ -238,6 +287,9 @@ function selectCity(city) {
     });
 
     clearStatus(formStatus);
+    
+    // Refresh messages to show only for the selected city
+    loadMessages();
 
     console.log("Selected alert city:", city);
 }
@@ -353,6 +405,15 @@ function setStatus(element, message, type = "") {
     element.textContent = message;
     element.classList.toggle("error", type === "error");
     element.classList.toggle("success", type === "success");
+    
+    // Auto-clear success messages after 5 seconds
+    if (type === "success") {
+        window.setTimeout(function() {
+            if (element.textContent === message && element.classList.contains("success")) {
+                clearStatus(element);
+            }
+        }, 5000);
+    }
 }
 
 
