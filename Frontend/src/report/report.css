@@ -19,6 +19,24 @@ body {
    TOP NAVIGATION
 ------------------------- */
 
+@keyframes waveFlow {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes reportPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(74, 144, 226, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(74, 144, 226, 0);
+    }
+}
+
 /* Thin translucent bar riding on top of the map, not a full-page header. */
 .topbar {
     position: fixed;
@@ -30,16 +48,43 @@ body {
     display: flex;
     align-items: center;
 
-    background: rgba(30, 30, 30, 0.82);
-    backdrop-filter: blur(6px);
+    background: linear-gradient(135deg, rgba(20, 80, 130, 0.9) 0%, rgba(30, 30, 30, 0.85) 100%);
+    backdrop-filter: blur(8px);
     color: white;
 
     padding-left: 24px;
+    
+    overflow: hidden;
+    border-bottom: 2px solid rgba(74, 144, 226, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Animated wave background */
+.topbar::before {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 200%;
+    height: 4px;
+    
+    background: linear-gradient(90deg, 
+        transparent 0%,
+        rgba(74, 144, 226, 0.3) 25%,
+        transparent 50%,
+        rgba(74, 144, 226, 0.3) 75%,
+        transparent 100%);
+    background-size: 100% 100%;
+    
+    animation: waveFlow 6s linear infinite;
 }
 
 .navigation-title {
     font-size: 19px;
     font-weight: bold;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 
@@ -47,23 +92,53 @@ body {
 
 .report-toggle {
     margin-left: auto;
+    margin-right: 20px;
 
-    height: 60px;
-    min-width: 120px;
+    height: 44px;
+    min-width: 130px;
+    padding: 0 20px;
 
     border: none;
+    border-radius: 8px;
 
-    background: #e4e4e4;
-    color: #111;
+    background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+    color: white;
 
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 700;
+    letter-spacing: 0.5px;
 
     cursor: pointer;
+    
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: reportPulse 2s infinite;
+    
+    box-shadow: 0 4px 16px rgba(74, 144, 226, 0.4);
+}
+
+.report-toggle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+    border-radius: 8px;
+    pointer-events: none;
 }
 
 .report-toggle:hover {
-    background: #d4d4d4;
+    background: linear-gradient(135deg, #5ba3f5 0%, #4a8fd6 100%);
+    box-shadow: 0 6px 24px rgba(74, 144, 226, 0.6);
+    transform: translateY(-2px);
+}
+
+.report-toggle:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(74, 144, 226, 0.4);
 }
 
 

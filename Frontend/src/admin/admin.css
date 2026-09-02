@@ -15,6 +15,19 @@ textarea {
     font: inherit;
 }
 
+/* -------------------------
+   ANIMATIONS
+------------------------- */
+
+@keyframes waveFlow {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
 /* Thin translucent bar riding on top of the map, not a full-page header. */
 .topbar {
     position: fixed;
@@ -26,13 +39,45 @@ textarea {
     align-items: center;
     padding: 12px 24px;
 
-    background: rgba(30, 30, 30, 0.82);
-    backdrop-filter: blur(6px);
+    background: linear-gradient(135deg, rgba(20, 80, 130, 0.9) 0%, rgba(30, 30, 30, 0.85) 100%);
+    backdrop-filter: blur(8px);
     color: white;
+    
+    border-bottom: 2px solid rgba(74, 144, 226, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    
+    overflow: hidden;
+}
+
+/* Animated wave background */
+.topbar::before {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 200%;
+    height: 4px;
+    
+    background: linear-gradient(90deg, 
+        transparent 0%,
+        rgba(74, 144, 226, 0.3) 25%,
+        transparent 50%,
+        rgba(74, 144, 226, 0.3) 75%,
+        transparent 100%);
+    background-size: 100% 100%;
+    
+    animation: waveFlow 6s linear infinite;
+    z-index: -1;
+}
+
+.topbar > div {
+    position: relative;
+    z-index: 1;
 }
 
 .topbar h1 {
     font-size: 19px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .eyebrow {
