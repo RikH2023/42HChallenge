@@ -264,7 +264,7 @@ function renderCities(cities) {
 
         const severityName = formatSeverity(summary.highest_severity);
         severity.className = `severity-badge severity-${summary.highest_severity}`;
-        severity.textContent = `Highest: ${severityName}`;
+        severity.textContent = `Severity: ${severityName}`;
 
         cityButton.append(cityDetails, severity);
         cityButton.addEventListener("click", function () {
