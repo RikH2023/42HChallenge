@@ -21,6 +21,7 @@ const formStatus = document.getElementById("formStatus");
 
 let selectedCity = "";
 let isLoadingDashboard = false;
+let lastLoadedMessages = [];
 
 let mockCities = [
     { city: "Eindhoven", report_count: 2, highest_severity: "high" },
@@ -200,12 +201,31 @@ async function loadMessages() {
             : await getJson(`${API_BASE_URL}/admin/messages`);
 
         console.log("Admin messages:", messages);
-        renderMessages(messages);
-
-        if (messages.length === 0) {
-            setStatus(messagesStatus, "There are no active messages.");
+        
+        // Save the full list
+        lastLoadedMessages = messages;
+        
+        // If a city is selected, show only messages for that city
+        if (selectedCity) {
+            const cityMessages = messages.filter(function (message) {
+                return message.city === selectedCity;
+            });
+            renderMessages(cityMessages);
+            
+            if (cityMessages.length === 0) {
+                setStatus(messagesStatus, `No active alerts for ${selectedCity} yet.`);
+            } else {
+                clearStatus(messagesStatus);
+            }
         } else {
-            clearStatus(messagesStatus);
+            // Show all messages if no city selected
+            renderMessages(messages);
+            
+            if (messages.length === 0) {
+                setStatus(messagesStatus, "There are no active messages.");
+            } else {
+                clearStatus(messagesStatus);
+            }
         }
     } catch (error) {
         console.error("Could not load admin messages:", error);
@@ -267,6 +287,9 @@ function selectCity(city) {
     });
 
     clearStatus(formStatus);
+    
+    // Refresh messages to show only for the selected city
+    loadMessages();
 
     console.log("Selected alert city:", city);
 }

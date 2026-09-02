@@ -158,7 +158,11 @@ function selectAnnouncementCity(city) {
     });
 
     renderAnnouncementMessages(city, cityMessages);
-    setAnnouncementStatus(`${cityMessages.length} ${cityMessages.length === 1 ? "announcement" : "announcements"} for ${city}.`);
+    
+    // Better status message
+    const count = cityMessages.length;
+    const countText = count === 1 ? "announcement" : "announcements";
+    setAnnouncementStatus(`${count} active ${countText} for ${city}`);
 
     console.log(`Announcements for ${city}:`, cityMessages);
 }
