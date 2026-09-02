@@ -7,7 +7,7 @@ export function renderReportView(root) {
     <header class="topbar">
 
         <div class="navigation-title">
-            Navigation panel
+            FloodWatch
         </div>
 
         <button id="reportToggle" class="report-toggle">
