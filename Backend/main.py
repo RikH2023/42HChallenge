@@ -19,6 +19,7 @@ Run with:  uvicorn main:app --reload
 Docs at:   http://127.0.0.1:8000/docs
 """
 
+import logging
 import uuid
 
 import httpx
@@ -29,6 +30,8 @@ import storage
 from geocoding import GeocodeError, geocode
 from models import (
     CitySummary,
+    DeliveryResult,
+    MessageCreated,
     Message,
     MessageIn,
     PublicReport,
@@ -38,6 +41,21 @@ from models import (
     normalise_city,
 )
 from severity import compute_severity
+from sms import build_provider
+
+# Uvicorn only configures its own uvicorn.* loggers, so without this our
+# "sms" and "api" loggers fall back to logging.lastResort, which drops
+# anything below WARNING. That silently swallows the console SMS output.
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s:     %(message)s",
+)
+
+logger = logging.getLogger("api")
+
+# Built once at startup so a bad SMS config fails immediately, not on the
+# first message an admin tries to send.
+sms_provider = build_provider()
 
 app = FastAPI(title="Flood Report API", version="0.2.0")
 
@@ -145,31 +163,87 @@ def get_cities() -> list[CitySummary]:
     )
 
 
-@app.post("/admin/messages", response_model=Message, status_code=201, tags=["admin"])
-def create_message(payload: MessageIn) -> Message:
-    """Store a message aimed at one city.
+@app.post(
+    "/admin/messages",
+    response_model=MessageCreated,
+    status_code=201,
+    tags=["admin"],
+)
+def create_message(payload: MessageIn) -> MessageCreated:
+    """Store a message for one city and text everyone who reported there.
 
-    The city is not checked against existing reports, so an admin can warn a
-    city before any report comes in. Flip `strict_city` below if you would
-    rather reject cities with no active reports.
+    Recipients are deduplicated by phone number: someone who filed three
+    reports for their street gets one message, not three.
+
+    Sending is synchronous, so the admin sees delivery results in the
+    response. With a real gateway and a few hundred recipients this will
+    make the request slow -- move it to a background task or a queue if the
+    number of reports per city ever grows.
+
+    The message is stored even if some or all texts fail. A failed send
+    should not silently lose the record of what was sent.
     """
     strict_city = False
 
+    reports = storage.list_reports()
+
     if strict_city:
-        known = {normalise_city(r.city) for r in storage.list_reports()}
+        known = {normalise_city(r.city) for r in reports}
         if normalise_city(payload.city) not in known:
             raise HTTPException(
                 status_code=400,
                 detail=f"No active reports for city: {payload.city!r}",
             )
 
+    wanted_city = normalise_city(payload.city)
+
+    # Prefer the spelling PDOK gave us over whatever the admin typed, so a
+    # message for "eindhoven" is stored and displayed as "Eindhoven".
+    canonical = next(
+        (r.city for r in reports if normalise_city(r.city) == wanted_city),
+        payload.city.strip(),
+    )
+
     message = Message(
         id=str(uuid.uuid4()),
-        city=payload.city.strip(),
+        city=canonical,
         msg=payload.msg,
     )
     storage.add_message(message)
-    return message
+
+    # Unique numbers only, in the order they first reported.
+    recipients: list[str] = []
+    seen: set[str] = set()
+    for report in reports:
+        if normalise_city(report.city) != wanted_city:
+            continue
+        if report.phone in seen:
+            continue
+        seen.add(report.phone)
+        recipients.append(report.phone)
+
+    results = [sms_provider.send(phone, message.msg) for phone in recipients]
+    failures = [r.phone for r in results if not r.ok]
+
+    if failures:
+        logger.warning(
+            "Message %s to %s: %d of %d failed",
+            message.id,
+            message.city,
+            len(failures),
+            len(results),
+        )
+
+    return MessageCreated(
+        message=message,
+        delivery=DeliveryResult(
+            provider=sms_provider.name,
+            recipients=len(recipients),
+            sent=len(results) - len(failures),
+            failed=len(failures),
+            failures=failures,
+        ),
+    )
 
 
 @app.get("/admin/messages", response_model=list[Message], tags=["admin"])

@@ -21,7 +21,7 @@ cd Backend
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 py -m pip install -r requirements.txt
-py -m uvicorn main:app --reload
+uvicorn main:app --reload --log-level info
 ```
 
 The API is available at [http://127.0.0.1:8000](http://127.0.0.1:8000). Its interactive API documentation is at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
@@ -31,7 +31,7 @@ On later runs, activate the existing environment, then start Uvicorn:
 ```powershell
 cd Backend
 .\.venv\Scripts\Activate.ps1
-py -m uvicorn main:app --reload
+uvicorn main:app --reload --log-level info
 ```
 
 ## Run the frontend

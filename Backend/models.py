@@ -50,10 +50,15 @@ Severity = Literal["low", "mid", "high"]
 # --------------------------------------------------------------------------
 
 
+# E.164: a plus, then 8-15 digits. Worth enforcing now that these numbers
+# get handed to an SMS gateway, which will reject anything malformed.
+E164 = r"^\+[1-9]\d{7,14}$"
+
+
 class ReportIn(BaseModel):
     """POST /reports body."""
 
-    phone: str = Field(..., min_length=1, examples=["+31612345678"])
+    phone: str = Field(..., pattern=E164, examples=["+31612345678"])
     address: str = Field(..., min_length=1, examples=["Dorpsstraat 1, Oirschot"])
     flood_level: Score
     water_movement: Score
@@ -117,3 +122,20 @@ class CitySummary(BaseModel):
     city: str
     report_count: int
     highest_severity: Severity
+
+
+class DeliveryResult(BaseModel):
+    """What happened when a message went out."""
+
+    provider: str
+    recipients: int
+    sent: int
+    failed: int
+    failures: list[str] = Field(default_factory=list)
+
+
+class MessageCreated(BaseModel):
+    """POST /admin/messages response: the stored message plus delivery."""
+
+    message: Message
+    delivery: DeliveryResult
