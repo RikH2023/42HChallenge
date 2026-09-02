@@ -87,6 +87,9 @@ export function renderAdminView(root) {
             </div>
         </aside>
 
+    </main>
+
+    <aside class="messages-panel">
         <section class="card messages-section" aria-labelledby="messagesTitle">
             <button class="collapsible-header" type="button" aria-expanded="true" data-section="messages-section">
                 <div>
@@ -103,8 +106,7 @@ export function renderAdminView(root) {
                 <div id="messagesList" class="messages-list"></div>
             </div>
         </section>
-
-    </main>
+    </aside>
     `
   );
   

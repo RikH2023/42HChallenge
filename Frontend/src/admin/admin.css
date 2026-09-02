@@ -83,6 +83,40 @@ textarea {
     background: #999;
 }
 
+/* Right-side panel for active messages */
+.messages-panel {
+    position: fixed;
+    top: 80px;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10;
+
+    width: min(420px, calc(100vw - 40px));
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
+.messages-panel::-webkit-scrollbar {
+    width: 8px;
+}
+
+.messages-panel::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.messages-panel::-webkit-scrollbar-thumb {
+    background: #d0d0d0;
+    border-radius: 4px;
+}
+
+.messages-panel::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
+
 .card {
     flex-shrink: 0;
     background: rgba(255, 255, 255, 0.96);
@@ -96,6 +130,13 @@ textarea {
 
 .card:hover {
     box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* On admin page, ensure map stays below the topbar (min-height: 60px) */
+#map {
+    top: 60px !important;
+    height: calc(100vh - 60px) !important;
+    z-index: 0;
 }
 
 /* -------------------------

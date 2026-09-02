@@ -405,6 +405,15 @@ function setStatus(element, message, type = "") {
     element.textContent = message;
     element.classList.toggle("error", type === "error");
     element.classList.toggle("success", type === "success");
+    
+    // Auto-clear success messages after 5 seconds
+    if (type === "success") {
+        window.setTimeout(function() {
+            if (element.textContent === message && element.classList.contains("success")) {
+                clearStatus(element);
+            }
+        }, 5000);
+    }
 }
 
 
