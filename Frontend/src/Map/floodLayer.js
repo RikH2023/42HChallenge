@@ -51,19 +51,8 @@ function coreLayerId(level) {
   return `${blobLayerId(level)}-core`;
 }
 
-// Placeholder copy until the backend provides real per-point details.
-const PLACEHOLDER_MESSAGES = [
-  "Water level rising rapidly in this area.",
-  "Sensors report unusual moisture levels.",
-  "Local drainage system nearing capacity.",
-  "Historical flood risk zone.",
-  "Recent rainfall exceeding seasonal average.",
-];
-
 function buildPopupHTML(level) {
-  const message =
-    PLACEHOLDER_MESSAGES[Math.floor(Math.random() * PLACEHOLDER_MESSAGES.length)];
-  return `<strong>Flood level: ${level}</strong><br/>${message}`;
+  return `<strong>${level}</strong>`;
 }
 
 export async function addFloodHeatmapLayer(map) {
