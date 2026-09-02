@@ -17,6 +17,7 @@ const announcementStatus = document.getElementById("announcementStatus");
 const TEST_MODE = false;
 
 const MESSAGES_URL = "http://127.0.0.1:8000/messages";
+const REFRESH_INTERVAL_MS = 30_000;
 
 const mockAnnouncements = [
     {
@@ -38,14 +39,41 @@ const mockAnnouncements = [
 
 let publishedAnnouncements = [];
 let selectedAnnouncementCity = "";
+let isLoadingAnnouncements = false;
 
 
 document.addEventListener("DOMContentLoaded", function () {
-    loadAnnouncements();
+    startAnnouncementRefresh();
 });
 
 
+function startAnnouncementRefresh() {
+    loadAnnouncements();
+
+    const refreshTimer = window.setInterval(function () {
+        if (document.visibilityState === "visible") {
+            loadAnnouncements();
+        }
+    }, REFRESH_INTERVAL_MS);
+
+    document.addEventListener("visibilitychange", function () {
+        if (document.visibilityState === "visible") {
+            loadAnnouncements();
+        }
+    });
+
+    window.addEventListener("pagehide", function () {
+        window.clearInterval(refreshTimer);
+    }, { once: true });
+}
+
+
 async function loadAnnouncements() {
+    if (isLoadingAnnouncements) {
+        return;
+    }
+
+    isLoadingAnnouncements = true;
     setAnnouncementStatus("Loading announcements...");
 
     try {
@@ -60,7 +88,13 @@ async function loadAnnouncements() {
             selectedAnnouncementCity = "";
             announcementMessages.replaceChildren();
             setAnnouncementStatus("There are currently no published announcements.");
+        } else if (selectedAnnouncementCity && publishedAnnouncements.some(function (message) {
+            return normaliseAnnouncementCity(message.city) === normaliseAnnouncementCity(selectedAnnouncementCity);
+        })) {
+            selectAnnouncementCity(selectedAnnouncementCity);
         } else {
+            selectedAnnouncementCity = "";
+            announcementMessages.replaceChildren();
             setAnnouncementStatus("Select a city to read its announcements.");
         }
     } catch (error) {
@@ -68,6 +102,8 @@ async function loadAnnouncements() {
         announcementCities.replaceChildren();
         announcementMessages.replaceChildren();
         setAnnouncementStatus("Announcements could not be loaded. Please try again later.", true);
+    } finally {
+        isLoadingAnnouncements = false;
     }
 }
 

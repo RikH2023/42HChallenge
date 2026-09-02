@@ -5,6 +5,7 @@ renderAdminView(document.body);
 const TEST_MODE = false;
 
 const API_BASE_URL = "http://127.0.0.1:8000";
+const REFRESH_INTERVAL_MS = 30_000;
 
 const citiesList = document.getElementById("citiesList");
 const citiesStatus = document.getElementById("citiesStatus");
@@ -19,6 +20,7 @@ const sendButton = document.getElementById("sendButton");
 const formStatus = document.getElementById("formStatus");
 
 let selectedCity = "";
+let isLoadingDashboard = false;
 
 let mockCities = [
     { city: "Eindhoven", report_count: 2, highest_severity: "high" },
@@ -45,8 +47,29 @@ let mockMessages = [
 
 
 document.addEventListener("DOMContentLoaded", function () {
-    loadDashboard();
+    startDashboardRefresh();
 });
+
+
+function startDashboardRefresh() {
+    loadDashboard();
+
+    const refreshTimer = window.setInterval(function () {
+        if (document.visibilityState === "visible") {
+            loadDashboard();
+        }
+    }, REFRESH_INTERVAL_MS);
+
+    document.addEventListener("visibilitychange", function () {
+        if (document.visibilityState === "visible") {
+            loadDashboard();
+        }
+    });
+
+    window.addEventListener("pagehide", function () {
+        window.clearInterval(refreshTimer);
+    }, { once: true });
+}
 
 
 refreshButton.addEventListener("click", function () {
@@ -128,11 +151,17 @@ alertForm.addEventListener("submit", async function (event) {
 
 
 async function loadDashboard() {
+    if (isLoadingDashboard) {
+        return;
+    }
+
+    isLoadingDashboard = true;
     refreshButton.disabled = true;
 
     try {
         await Promise.all([loadCities(), loadMessages()]);
     } finally {
+        isLoadingDashboard = false;
         refreshButton.disabled = false;
     }
 }

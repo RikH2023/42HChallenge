@@ -56,7 +56,9 @@ The frontend's default Vite port, `5173`, is already allowed by the backend CORS
 
 ## Current API connection
 
-The public report and admin pages call the backend at `http://127.0.0.1:8000` for reports, messages, and city data. The map layer is currently configured for a separate flood-level endpoint (`/api/flood-levels`) and uses built-in demonstration points when that endpoint is unavailable. Running both applications still enables submitting reports and managing announcements.
+The public report and admin pages call the backend at `http://127.0.0.1:8000` for reports, messages, and city data. The map reads its points from `GET /reports`, so each submitted and successfully geocoded report appears at its backend-provided location with its calculated severity. Set `VITE_API_URL` to use a different API base URL when deploying.
+
+The map, public announcements, and admin dashboard refresh automatically every 30 seconds while their browser tab is visible. They also refresh immediately when the user returns to the tab.
 
 ## Verify a production frontend build
 

@@ -16,9 +16,9 @@ export const INITIAL_ZOOM = 7;
 export const MIN_ZOOM = 6;
 export const MAX_ZOOM = 18;
 
-// Endpoint exposed by the backend team, override with VITE_API_URL if needed.
+// Flood Report API base URL, override it when deploying the frontend elsewhere.
 export const FLOOD_DATA_URL =
-  import.meta.env.VITE_API_URL ?? "/api/flood-levels";
+  `${import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000"}/reports`;
 
 // Numeric weight per flood-severity label, used to drive the heatmap intensity.
 export const LEVEL_WEIGHTS = {
