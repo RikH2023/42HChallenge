@@ -535,30 +535,19 @@ reportForm.addEventListener("submit", async function (event) {
 
     event.preventDefault();
 
+    // Clear previous errors
+    const formErrorsContainer = document.getElementById("formErrors");
+    formErrorsContainer.replaceChildren();
 
-    /*
-    Important:
-
-    We only accept an address selected from
-    the suggestion list.
-
-    If the user types something manually after
-    selecting an address, selectedAddress becomes
-    empty again.
-    */
-
-    if (!selectedAddress) {
-
-        alert("Please select an address from the suggestions.");
-
-        addressInput.focus();
-
+    // Validate form
+    const validationErrors = validateReportForm();
+    
+    if (validationErrors.length > 0) {
+        displayFormErrors(validationErrors);
         return;
     }
 
-
     const formData = new FormData(reportForm);
-
 
     const floodLevelScores = {
         low: 1,
@@ -578,27 +567,18 @@ reportForm.addEventListener("submit", async function (event) {
         impassable: 3
     };
 
-
     const report = {
-
         phone: formData.get("phone").trim() || "N/A",
-
         address: selectedAddress,
-
         flood_level: floodLevelScores[formData.get("floodLevel")],
-
         water_movement: waterMovementScores[formData.get("waterMovement")],
-
         road_condition: roadConditionScores[formData.get("roadCondition")]
-
     };
-
 
     console.log("Submitted report request:", report);
 
-
     if (TEST_MODE) {
-        alert("Frontend test successful");
+        displayFormErrors(["Frontend test successful"]);
         return;
     }
 
@@ -644,22 +624,26 @@ reportForm.addEventListener("submit", async function (event) {
             return;
         }
 
-
+        // Handle error responses
+        const errors = [];
+        
         if (response.status === 400) {
-            alert("The address could not be resolved or is outside the Netherlands.");
+            errors.push("The address could not be resolved or is outside the Netherlands.");
         } else if (response.status === 422) {
-            alert("The submitted form data is invalid.");
+            errors.push("The submitted form data is invalid.");
         } else if (response.status === 502) {
-            alert("The geocoding service is temporarily unavailable. Please try again later.");
+            errors.push("The geocoding service is temporarily unavailable. Please try again later.");
         } else {
-            alert("There was an error submitting the report. Please try again.");
+            errors.push("There was an error submitting the report. Please try again.");
         }
+        
+        displayFormErrors(errors);
 
     } catch (error) {
 
         console.error("Report submission error:", error);
 
-        alert("There was an error submitting the report. Please check the connection and try again.");
+        displayFormErrors(["There was an error submitting the report. Please check the connection and try again."]);
 
     }
 
@@ -711,4 +695,103 @@ function showSuccessMessage(message) {
             notification.remove();
         }, 300);
     }, 3000);
+}
+
+
+/*
+--------------------------------------------------
+FORM VALIDATION
+--------------------------------------------------
+*/
+
+/**
+ * Validate the report form and return an array of error messages
+ */
+function validateReportForm() {
+    const errors = [];
+    const formData = new FormData(reportForm);
+
+    // Validate address
+    if (!selectedAddress) {
+        errors.push("Please select an address from the suggestions.");
+    }
+
+    // Validate phone number
+    const phone = formData.get("phone").trim();
+    if (!phone) {
+        errors.push("Phone number is required.");
+    } else if (!isValidPhoneNumber(phone)) {
+        errors.push("Phone number must start with country code (+31) or 06 (Netherlands format).");
+    }
+
+    // Validate flood level
+    if (!formData.get("floodLevel")) {
+        errors.push("Please select a flood level.");
+    }
+
+    // Validate water movement
+    if (!formData.get("waterMovement")) {
+        errors.push("Please select water movement.");
+    }
+
+    // Validate road condition
+    if (!formData.get("roadCondition")) {
+        errors.push("Please select a road condition.");
+    }
+
+    return errors;
+}
+
+/**
+ * Check if phone number is in valid Netherlands format
+ * Accepts: +31..., 06..., 0031...
+ */
+function isValidPhoneNumber(phone) {
+    // Remove spaces and dashes
+    const cleaned = phone.replace(/[\s\-]/g, "");
+    
+    // Check for valid Netherlands formats
+    // +31 followed by digits
+    if (cleaned.match(/^\+31\d{6,}$/)) {
+        return true;
+    }
+    
+    // 06 followed by digits (Dutch mobile format)
+    if (cleaned.match(/^06\d{6,}$/)) {
+        return true;
+    }
+    
+    // 0031 followed by digits (alternative format)
+    if (cleaned.match(/^0031\d{6,}$/)) {
+        return true;
+    }
+    
+    return false;
+}
+
+/**
+ * Display form validation errors in the error container
+ */
+function displayFormErrors(errors) {
+    const formErrorsContainer = document.getElementById("formErrors");
+    formErrorsContainer.replaceChildren();
+
+    if (errors.length === 0) {
+        return;
+    }
+
+    const errorList = document.createElement("ul");
+    errorList.className = "error-list";
+
+    errors.forEach(function (error) {
+        const errorItem = document.createElement("li");
+        errorItem.textContent = error;
+        errorList.appendChild(errorItem);
+    });
+
+    formErrorsContainer.appendChild(errorList);
+    formErrorsContainer.classList.add("visible");
+    
+    // Scroll to error container
+    formErrorsContainer.scrollIntoView({ behavior: "smooth", block: "center" });
 }

@@ -44,6 +44,7 @@ export function renderReportView(root) {
                 </button>
             </div>
 
+            <div id="formErrors" class="form-errors" role="alert" aria-live="polite"></div>
 
             <form id="reportForm">
 
@@ -60,7 +61,6 @@ export function renderReportView(root) {
                         name="address"
                         placeholder="Start typing your address..."
                         autocomplete="off"
-                        required
                     >
 
                     <div
@@ -75,7 +75,7 @@ export function renderReportView(root) {
                 <div class="form-group">
 
                     <label for="phone">
-                        Phone
+                        Phone <span class="required-marker" aria-hidden="true">*</span>
                     </label>
 
                     <input
@@ -98,7 +98,6 @@ export function renderReportView(root) {
                             type="radio"
                             name="floodLevel"
                             value="low"
-                            required
                         >
                         Low
                     </label>
@@ -134,7 +133,6 @@ export function renderReportView(root) {
                             type="radio"
                             name="waterMovement"
                             value="still"
-                            required
                         >
                         Still
                     </label>
@@ -170,7 +168,6 @@ export function renderReportView(root) {
                             type="radio"
                             name="roadCondition"
                             value="passable"
-                            required
                         >
                         Passable
                     </label>
