@@ -82,7 +82,7 @@ export function renderReportView(root) {
                         type="tel"
                         id="phone"
                         name="phone"
-                        placeholder="06 12345678"
+                        placeholder="+31.."
                     >
 
                 </div>
